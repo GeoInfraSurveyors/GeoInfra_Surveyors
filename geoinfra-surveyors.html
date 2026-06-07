@@ -1,0 +1,2003 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GeoInfra Surveyors – Land Survey Digitization | GIS Mapping | CAD Drafting</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow:ital,wght@0,300;0,400;0,500;0,600;1,300&family=Barlow+Condensed:wght@400;600;700&display=swap" rel="stylesheet">
+
+<style>
+  :root {
+    --bg: #0a0e13;
+    --surface: #111820;
+    --surface2: #16202b;
+    --border: #1e3048;
+    --accent: #00c8a0;
+    --accent2: #0084ff;
+    --accent3: #f0a500;
+    --text: #d8e8f5;
+    --text-dim: #6b8aa8;
+    --text-bright: #ffffff;
+    --grid: #0d1a26;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: 'Barlow', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    overflow-x: hidden;
+    cursor: default;
+  }
+
+  /* ── GRID OVERLAY ── */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(var(--grid) 1px, transparent 1px),
+      linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+    background-size: 48px 48px;
+    pointer-events: none;
+    z-index: 0;
+    opacity: 0.5;
+  }
+
+  /* ── NAV ── */
+  nav {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 48px;
+    height: 68px;
+    background: rgba(10,14,19,0.92);
+    border-bottom: 1px solid var(--border);
+    backdrop-filter: blur(12px);
+  }
+
+  .nav-logo {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    text-decoration: none;
+  }
+
+  .nav-logo-icon {
+    width: 36px;
+    height: 36px;
+    flex-shrink: 0;
+  }
+
+  .nav-logo-text {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 22px;
+    letter-spacing: 2px;
+    color: var(--text-bright);
+    line-height: 1;
+  }
+
+  .nav-logo-sub {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 10px;
+    letter-spacing: 3px;
+    color: var(--accent);
+    text-transform: uppercase;
+    display: block;
+  }
+
+  .nav-links {
+    display: flex;
+    gap: 8px;
+    list-style: none;
+  }
+
+  .nav-links a {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 13px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    text-decoration: none;
+    padding: 6px 14px;
+    border: 1px solid transparent;
+    transition: all 0.2s;
+    cursor: pointer;
+  }
+
+  .nav-links a:hover,
+  .nav-links a.active {
+    color: var(--accent);
+    border-color: var(--accent);
+    background: rgba(0,200,160,0.06);
+  }
+
+  .nav-cta {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 12px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--bg) !important;
+    background: var(--accent) !important;
+    border: 1px solid var(--accent) !important;
+    padding: 8px 20px !important;
+    transition: all 0.2s !important;
+  }
+
+  .nav-cta:hover {
+    background: #00f0c0 !important;
+    color: var(--bg) !important;
+  }
+
+  /* ── PAGE SYSTEM ── */
+  .page { display: none; padding-top: 68px; min-height: 100vh; position: relative; z-index: 1; }
+  .page.active { display: block; }
+
+  /* ── HERO ── */
+  .hero {
+    min-height: calc(100vh - 68px);
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    align-items: center;
+    gap: 0;
+    padding: 80px 48px 60px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .hero::after {
+    content: '';
+    position: absolute;
+    right: -100px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 600px;
+    height: 600px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(0,200,160,0.08) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  .hero-tag {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 11px;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    color: var(--accent);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 28px;
+    animation: fadeUp 0.8s ease both;
+  }
+
+  .hero-tag::before {
+    content: '';
+    width: 32px;
+    height: 1px;
+    background: var(--accent);
+    display: inline-block;
+  }
+
+  .hero-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(56px, 7vw, 96px);
+    line-height: 0.92;
+    color: var(--text-bright);
+    letter-spacing: 2px;
+    margin-bottom: 20px;
+    animation: fadeUp 0.8s 0.1s ease both;
+  }
+
+  .hero-title span {
+    color: var(--accent);
+    display: block;
+  }
+
+  .hero-desc {
+    font-size: 16px;
+    font-weight: 300;
+    line-height: 1.7;
+    color: var(--text-dim);
+    max-width: 460px;
+    margin-bottom: 44px;
+    animation: fadeUp 0.8s 0.2s ease both;
+  }
+
+  .hero-desc strong {
+    color: var(--text);
+    font-weight: 500;
+  }
+
+  .hero-btns {
+    display: flex;
+    gap: 16px;
+    animation: fadeUp 0.8s 0.3s ease both;
+  }
+
+  .btn-primary {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 13px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--bg);
+    background: var(--accent);
+    border: none;
+    padding: 14px 32px;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-decoration: none;
+    display: inline-block;
+  }
+
+  .btn-primary:hover { background: #00f0c0; transform: translateY(-2px); }
+
+  .btn-outline {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 13px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--accent);
+    background: transparent;
+    border: 1px solid var(--accent);
+    padding: 14px 32px;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-decoration: none;
+    display: inline-block;
+  }
+
+  .btn-outline:hover {
+    background: rgba(0,200,160,0.08);
+    transform: translateY(-2px);
+  }
+
+  .hero-map {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    animation: fadeIn 1.2s 0.4s ease both;
+  }
+
+  .hero-stats {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1px;
+    background: var(--border);
+    border: 1px solid var(--border);
+    animation: fadeUp 0.8s 0.4s ease both;
+    margin-top: 52px;
+  }
+
+  .stat-box {
+    background: var(--surface);
+    padding: 24px 28px;
+  }
+
+  .stat-num {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 42px;
+    color: var(--accent);
+    line-height: 1;
+    letter-spacing: 1px;
+  }
+
+  .stat-label {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 11px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    margin-top: 4px;
+  }
+
+  /* ── SECTION SHARED ── */
+  .section {
+    padding: 100px 48px;
+    position: relative;
+    z-index: 1;
+  }
+
+  .section-header {
+    margin-bottom: 64px;
+  }
+
+  .section-tag {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 11px;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    color: var(--accent);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 16px;
+  }
+
+  .section-tag::before {
+    content: '';
+    width: 24px;
+    height: 1px;
+    background: var(--accent);
+  }
+
+  .section-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(40px, 5vw, 68px);
+    color: var(--text-bright);
+    letter-spacing: 2px;
+    line-height: 1;
+  }
+
+  .section-title span { color: var(--accent); }
+
+  /* ── TICKER ── */
+  .ticker {
+    background: var(--accent);
+    padding: 12px 0;
+    overflow: hidden;
+    white-space: nowrap;
+  }
+
+  .ticker-inner {
+    display: inline-flex;
+    animation: ticker 30s linear infinite;
+    gap: 0;
+  }
+
+  .ticker-item {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 13px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--bg);
+    padding: 0 32px;
+    font-weight: 600;
+  }
+
+  .ticker-sep {
+    color: var(--bg);
+    opacity: 0.4;
+  }
+
+  /* ── ABOUT ── */
+  .about-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 80px;
+    align-items: center;
+  }
+
+  .about-text p {
+    font-size: 16px;
+    font-weight: 300;
+    line-height: 1.8;
+    color: var(--text-dim);
+    margin-bottom: 20px;
+  }
+
+  .about-text p strong {
+    color: var(--text);
+    font-weight: 500;
+  }
+
+  .about-visual {
+    position: relative;
+  }
+
+  .about-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    padding: 32px;
+  }
+
+  .about-card-header {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 11px;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 20px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .value-item {
+    display: flex;
+    gap: 16px;
+    padding: 16px 0;
+    border-bottom: 1px solid var(--border);
+    align-items: flex-start;
+  }
+
+  .value-item:last-child { border-bottom: none; }
+
+  .value-icon {
+    width: 36px;
+    height: 36px;
+    background: rgba(0,200,160,0.1);
+    border: 1px solid rgba(0,200,160,0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    font-size: 16px;
+  }
+
+  .value-label {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 15px;
+    font-weight: 600;
+    letter-spacing: 1px;
+    color: var(--text-bright);
+    margin-bottom: 4px;
+  }
+
+  .value-desc {
+    font-size: 13px;
+    color: var(--text-dim);
+    font-weight: 300;
+    line-height: 1.6;
+  }
+
+  .team-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1px;
+    background: var(--border);
+    border: 1px solid var(--border);
+    margin-top: 64px;
+  }
+
+  .team-card {
+    background: var(--surface);
+    padding: 32px 28px;
+    transition: background 0.2s;
+  }
+
+  .team-card:hover { background: var(--surface2); }
+
+  .team-avatar {
+    width: 60px;
+    height: 60px;
+    border: 2px solid var(--accent);
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 22px;
+    color: var(--accent);
+    background: rgba(0,200,160,0.06);
+  }
+
+  .team-name {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--text-bright);
+    letter-spacing: 1px;
+    margin-bottom: 4px;
+  }
+
+  .team-role {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 11px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 12px;
+  }
+
+  .team-bio {
+    font-size: 13px;
+    color: var(--text-dim);
+    line-height: 1.6;
+    font-weight: 300;
+  }
+
+  /* ── SERVICES ── */
+  .services-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1px;
+    background: var(--border);
+    border: 1px solid var(--border);
+  }
+
+  .service-card {
+    background: var(--surface);
+    padding: 36px 28px;
+    position: relative;
+    overflow: hidden;
+    transition: background 0.3s;
+    cursor: default;
+  }
+
+  .service-card::before {
+    content: '';
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 2px;
+    background: var(--accent);
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 0.3s;
+  }
+
+  .service-card:hover { background: var(--surface2); }
+  .service-card:hover::before { transform: scaleX(1); }
+
+  .service-num {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 48px;
+    color: var(--border);
+    line-height: 1;
+    margin-bottom: 20px;
+    letter-spacing: 1px;
+    transition: color 0.3s;
+  }
+
+  .service-card:hover .service-num { color: rgba(0,200,160,0.15); }
+
+  .service-icon {
+    font-size: 28px;
+    margin-bottom: 16px;
+    display: block;
+  }
+
+  .service-name {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 18px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    color: var(--text-bright);
+    margin-bottom: 12px;
+    line-height: 1.2;
+  }
+
+  .service-desc {
+    font-size: 13px;
+    color: var(--text-dim);
+    line-height: 1.7;
+    font-weight: 300;
+  }
+
+  .service-badge {
+    display: inline-block;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 10px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--accent);
+    border: 1px solid rgba(0,200,160,0.3);
+    padding: 3px 8px;
+    margin-top: 16px;
+  }
+
+  .tools-strip {
+    display: flex;
+    gap: 0;
+    border: 1px solid var(--border);
+    background: var(--border);
+    margin-top: 48px;
+    overflow: hidden;
+  }
+
+  .tool-chip {
+    flex: 1;
+    background: var(--surface);
+    padding: 18px 20px;
+    text-align: center;
+  }
+
+  .tool-name {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    letter-spacing: 1px;
+    color: var(--text);
+    margin-bottom: 4px;
+  }
+
+  .tool-type {
+    font-size: 11px;
+    color: var(--text-dim);
+    letter-spacing: 1px;
+  }
+
+  /* ── PROJECTS ── */
+  .projects-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1px;
+    background: var(--border);
+    border: 1px solid var(--border);
+  }
+
+  .project-card {
+    background: var(--surface);
+    overflow: hidden;
+    position: relative;
+    transition: background 0.2s;
+  }
+
+  .project-card:hover { background: var(--surface2); }
+
+  .project-visual {
+    height: 180px;
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .project-body {
+    padding: 28px 24px;
+  }
+
+  .project-tag {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 10px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 10px;
+    display: block;
+  }
+
+  .project-name {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 19px;
+    font-weight: 700;
+    color: var(--text-bright);
+    letter-spacing: 0.5px;
+    margin-bottom: 10px;
+    line-height: 1.2;
+  }
+
+  .project-desc {
+    font-size: 13px;
+    color: var(--text-dim);
+    line-height: 1.7;
+    font-weight: 300;
+  }
+
+  .project-meta {
+    display: flex;
+    gap: 0;
+    margin-top: 20px;
+    border-top: 1px solid var(--border);
+    padding-top: 16px;
+  }
+
+  .project-meta-item {
+    flex: 1;
+    padding-right: 12px;
+  }
+
+  .meta-label {
+    font-size: 10px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    margin-bottom: 3px;
+    font-family: 'Barlow Condensed', sans-serif;
+  }
+
+  .meta-value {
+    font-size: 13px;
+    color: var(--text);
+    font-weight: 500;
+    font-family: 'Barlow Condensed', sans-serif;
+    letter-spacing: 0.5px;
+  }
+
+  .cta-band {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--accent);
+    padding: 40px 48px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 64px;
+  }
+
+  .cta-band-text {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 22px;
+    letter-spacing: 1px;
+    color: var(--text-bright);
+  }
+
+  .cta-band-sub {
+    font-size: 14px;
+    color: var(--text-dim);
+    font-weight: 300;
+    margin-top: 4px;
+  }
+
+  /* ── CONTACT ── */
+  .contact-grid {
+    display: grid;
+    grid-template-columns: 1fr 1.2fr;
+    gap: 64px;
+  }
+
+  .contact-info h3 {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 15px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 24px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .contact-item {
+    display: flex;
+    gap: 16px;
+    padding: 20px 0;
+    border-bottom: 1px solid var(--border);
+    align-items: flex-start;
+  }
+
+  .contact-item:last-of-type { border-bottom: none; }
+
+  .contact-icon {
+    width: 40px;
+    height: 40px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    flex-shrink: 0;
+  }
+
+  .contact-label {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 11px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    margin-bottom: 5px;
+  }
+
+  .contact-value {
+    font-size: 15px;
+    color: var(--text);
+    font-weight: 400;
+  }
+
+  /* ── FORM ── */
+  .form-title {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 15px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 24px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+
+  .form-group {
+    margin-bottom: 20px;
+  }
+
+  .form-label {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 11px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    display: block;
+    margin-bottom: 8px;
+  }
+
+  .form-input, .form-select, .form-textarea {
+    width: 100%;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 12px 16px;
+    font-family: 'Barlow', sans-serif;
+    font-size: 14px;
+    outline: none;
+    transition: border-color 0.2s;
+    appearance: none;
+    -webkit-appearance: none;
+  }
+
+  .form-input:focus, .form-select:focus, .form-textarea:focus {
+    border-color: var(--accent);
+    background: var(--surface2);
+  }
+
+  .form-textarea {
+    resize: vertical;
+    min-height: 120px;
+    font-weight: 300;
+  }
+
+  .form-select option { background: var(--surface2); }
+
+  .form-submit {
+    width: 100%;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 14px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--bg);
+    background: var(--accent);
+    border: none;
+    padding: 16px 32px;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-weight: 700;
+  }
+
+  .form-submit:hover { background: #00f0c0; }
+
+  .success-msg {
+    display: none;
+    background: rgba(0,200,160,0.1);
+    border: 1px solid var(--accent);
+    padding: 20px 24px;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 16px;
+    letter-spacing: 1px;
+    color: var(--accent);
+    margin-top: 16px;
+    text-align: center;
+  }
+
+  /* ── FOOTER ── */
+  footer {
+    background: var(--surface);
+    border-top: 1px solid var(--border);
+    padding: 48px 48px 32px;
+    position: relative;
+    z-index: 1;
+  }
+
+  .footer-grid {
+    display: grid;
+    grid-template-columns: 1.5fr 1fr 1fr 1fr;
+    gap: 48px;
+    padding-bottom: 40px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 28px;
+  }
+
+  .footer-brand-name {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 24px;
+    letter-spacing: 2px;
+    color: var(--text-bright);
+    margin-bottom: 4px;
+  }
+
+  .footer-brand-tag {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 10px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 16px;
+  }
+
+  .footer-desc {
+    font-size: 13px;
+    color: var(--text-dim);
+    line-height: 1.7;
+    font-weight: 300;
+    max-width: 260px;
+  }
+
+  .footer-col h4 {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 11px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 20px;
+  }
+
+  .footer-col ul { list-style: none; }
+
+  .footer-col ul li {
+    font-size: 13px;
+    color: var(--text-dim);
+    padding: 6px 0;
+    cursor: pointer;
+    transition: color 0.2s;
+    font-weight: 300;
+  }
+
+  .footer-col ul li:hover { color: var(--accent); }
+
+  .footer-bottom {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .footer-copy {
+    font-size: 12px;
+    color: var(--text-dim);
+    font-family: 'Barlow Condensed', sans-serif;
+    letter-spacing: 1px;
+  }
+
+  .footer-note {
+    font-size: 12px;
+    color: var(--text-dim);
+    font-family: 'Barlow Condensed', sans-serif;
+    letter-spacing: 1px;
+  }
+
+  /* ── SVG MAP ── */
+  .map-svg-wrap {
+    width: 100%;
+    max-width: 520px;
+    position: relative;
+  }
+
+  .map-svg-wrap svg { width: 100%; height: auto; }
+
+  .map-pulse {
+    animation: pulse 2s ease-in-out infinite;
+  }
+
+  .map-pulse2 {
+    animation: pulse 2s 0.6s ease-in-out infinite;
+  }
+
+  .map-pulse3 {
+    animation: pulse 2s 1.2s ease-in-out infinite;
+  }
+
+  /* ── DECORATIVE DIVIDER ── */
+  .section-divider {
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--border), var(--accent), var(--border), transparent);
+    margin: 0 48px;
+  }
+
+  /* ── ANIMATIONS ── */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(24px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+
+  @keyframes ticker {
+    from { transform: translateX(0); }
+    to { transform: translateX(-50%); }
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; r: 5px; }
+    50% { opacity: 0.3; r: 8px; }
+  }
+
+  @keyframes scanline {
+    from { transform: translateY(-100%); }
+    to { transform: translateY(100%); }
+  }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 1100px) {
+    .services-grid { grid-template-columns: repeat(2, 1fr); }
+    .team-grid { grid-template-columns: repeat(2, 1fr); }
+    .footer-grid { grid-template-columns: 1fr 1fr; gap: 32px; }
+  }
+
+  @media (max-width: 800px) {
+    nav { padding: 0 20px; }
+    .nav-links { display: none; }
+    .hero { grid-template-columns: 1fr; padding: 40px 20px; }
+    .hero-map { display: none; }
+    .section { padding: 64px 20px; }
+    .about-grid, .contact-grid { grid-template-columns: 1fr; }
+    .projects-grid { grid-template-columns: 1fr; }
+    .services-grid { grid-template-columns: 1fr; }
+    .form-row { grid-template-columns: 1fr; }
+    .cta-band { flex-direction: column; gap: 20px; text-align: center; }
+    footer { padding: 40px 20px 24px; }
+    .footer-grid { grid-template-columns: 1fr; }
+    .footer-bottom { flex-direction: column; gap: 8px; }
+    .tools-strip { flex-wrap: wrap; }
+    .tool-chip { min-width: 50%; }
+  }
+</style>
+</head>
+<body>
+
+<!-- NAVIGATION -->
+<nav>
+  <a class="nav-logo" onclick="showPage('home')" style="cursor:pointer">
+    <svg class="nav-logo-icon" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect width="36" height="36" fill="none"/>
+      <polygon points="18,3 33,12 33,28 18,33 3,28 3,12" fill="none" stroke="#00c8a0" stroke-width="1.5"/>
+      <polygon points="18,9 27,14 27,24 18,27 9,24 9,14" fill="none" stroke="#00c8a0" stroke-width="1" opacity="0.4"/>
+      <circle cx="18" cy="18" r="3" fill="#00c8a0"/>
+      <line x1="18" y1="3" x2="18" y2="9" stroke="#00c8a0" stroke-width="1" opacity="0.5"/>
+      <line x1="33" y1="12" x2="27" y2="14" stroke="#00c8a0" stroke-width="1" opacity="0.5"/>
+      <line x1="33" y1="28" x2="27" y2="24" stroke="#00c8a0" stroke-width="1" opacity="0.5"/>
+      <line x1="18" y1="33" x2="18" y2="27" stroke="#00c8a0" stroke-width="1" opacity="0.5"/>
+      <line x1="3" y1="28" x2="9" y2="24" stroke="#00c8a0" stroke-width="1" opacity="0.5"/>
+      <line x1="3" y1="12" x2="9" y2="14" stroke="#00c8a0" stroke-width="1" opacity="0.5"/>
+    </svg>
+    <div>
+      <div class="nav-logo-text">GeoInfra</div>
+      <span class="nav-logo-sub">Surveyors</span>
+    </div>
+  </a>
+  <ul class="nav-links">
+    <li><a onclick="showPage('home')" id="nav-home" class="active">Home</a></li>
+    <li><a onclick="showPage('about')" id="nav-about">About Us</a></li>
+    <li><a onclick="showPage('services')" id="nav-services">Services</a></li>
+    <li><a onclick="showPage('projects')" id="nav-projects">Projects</a></li>
+    <li><a onclick="showPage('contact')" id="nav-contact" class="nav-cta">Contact Us</a></li>
+  </ul>
+</nav>
+
+
+<!-- ═══════════════════ HOME ═══════════════════ -->
+<div id="page-home" class="page active">
+  <section class="hero">
+    <div class="hero-content">
+      <div class="hero-tag">Geospatial Engineering Solutions</div>
+      <h1 class="hero-title">
+        Mapping<br>
+        <span>India's</span><br>
+        Infrastructure
+      </h1>
+      <p class="hero-desc">
+        <strong>GeoInfra Surveyors</strong> delivers precision land survey digitization, GIS mapping, and CAD drafting for government and private-sector clients across India.
+      </p>
+      <div class="hero-btns">
+        <a class="btn-primary" onclick="showPage('services')">Our Services</a>
+        <a class="btn-outline" onclick="showPage('contact')">Get a Quote</a>
+      </div>
+
+      <div class="hero-stats">
+        <div class="stat-box">
+          <div class="stat-num">500+</div>
+          <div class="stat-label">Projects Delivered</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-num">8</div>
+          <div class="stat-label">Core Services</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-num">15+</div>
+          <div class="stat-label">Years Experience</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-num">100%</div>
+          <div class="stat-label">Client Satisfaction</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="hero-map">
+      <div class="map-svg-wrap">
+        <!-- Stylized Geospatial / Topographic illustration -->
+        <svg viewBox="0 0 520 480" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <!-- Background grid -->
+          <defs>
+            <pattern id="smallgrid" width="20" height="20" patternUnits="userSpaceOnUse">
+              <path d="M 20 0 L 0 0 0 20" fill="none" stroke="#1e3048" stroke-width="0.5"/>
+            </pattern>
+            <pattern id="grid" width="100" height="100" patternUnits="userSpaceOnUse">
+              <rect width="100" height="100" fill="url(#smallgrid)"/>
+              <path d="M 100 0 L 0 0 0 100" fill="none" stroke="#1e3048" stroke-width="1"/>
+            </pattern>
+            <radialGradient id="glow" cx="50%" cy="50%" r="50%">
+              <stop offset="0%" stop-color="#00c8a0" stop-opacity="0.2"/>
+              <stop offset="100%" stop-color="#00c8a0" stop-opacity="0"/>
+            </radialGradient>
+          </defs>
+
+          <!-- Grid background -->
+          <rect width="520" height="480" fill="url(#grid)" opacity="0.6"/>
+
+          <!-- Glow center -->
+          <circle cx="260" cy="240" r="200" fill="url(#glow)"/>
+
+          <!-- Topographic rings -->
+          <ellipse cx="260" cy="240" rx="180" ry="140" stroke="#00c8a0" stroke-width="0.5" stroke-dasharray="4 6" opacity="0.3"/>
+          <ellipse cx="260" cy="240" rx="140" ry="105" stroke="#00c8a0" stroke-width="0.5" stroke-dasharray="4 6" opacity="0.35"/>
+          <ellipse cx="260" cy="240" rx="100" ry="74" stroke="#00c8a0" stroke-width="0.5" stroke-dasharray="4 6" opacity="0.4"/>
+          <ellipse cx="260" cy="240" rx="60" ry="44" stroke="#00c8a0" stroke-width="0.7" opacity="0.5"/>
+          <ellipse cx="260" cy="240" rx="25" ry="18" fill="rgba(0,200,160,0.12)" stroke="#00c8a0" stroke-width="1"/>
+
+          <!-- Cadastral grid lines -->
+          <line x1="80" y1="100" x2="440" y2="100" stroke="#0084ff" stroke-width="0.7" opacity="0.3"/>
+          <line x1="80" y1="160" x2="440" y2="160" stroke="#0084ff" stroke-width="0.7" opacity="0.3"/>
+          <line x1="80" y1="240" x2="440" y2="240" stroke="#0084ff" stroke-width="0.7" opacity="0.3"/>
+          <line x1="80" y1="320" x2="440" y2="320" stroke="#0084ff" stroke-width="0.7" opacity="0.3"/>
+          <line x1="80" y1="380" x2="440" y2="380" stroke="#0084ff" stroke-width="0.7" opacity="0.3"/>
+          <line x1="120" y1="60" x2="120" y2="420" stroke="#0084ff" stroke-width="0.7" opacity="0.3"/>
+          <line x1="200" y1="60" x2="200" y2="420" stroke="#0084ff" stroke-width="0.7" opacity="0.3"/>
+          <line x1="260" y1="60" x2="260" y2="420" stroke="#0084ff" stroke-width="0.7" opacity="0.3"/>
+          <line x1="340" y1="60" x2="340" y2="420" stroke="#0084ff" stroke-width="0.7" opacity="0.3"/>
+          <line x1="400" y1="60" x2="400" y2="420" stroke="#0084ff" stroke-width="0.7" opacity="0.3"/>
+
+          <!-- Road corridor -->
+          <path d="M 60 300 Q 160 280 260 240 Q 360 200 460 180" stroke="#f0a500" stroke-width="2.5" opacity="0.6" fill="none"/>
+          <path d="M 60 312 Q 160 292 260 252 Q 360 212 460 192" stroke="#f0a500" stroke-width="1" stroke-dasharray="8 8" opacity="0.3" fill="none"/>
+
+          <!-- Pipeline route -->
+          <path d="M 100 380 L 200 340 L 320 360 L 420 320" stroke="#0084ff" stroke-width="2" opacity="0.5" fill="none" stroke-dasharray="6 4"/>
+
+          <!-- Parcel polygons -->
+          <polygon points="160,160 200,150 210,190 170,195" fill="rgba(0,132,255,0.08)" stroke="#0084ff" stroke-width="1" opacity="0.6"/>
+          <polygon points="210,150 260,145 265,185 215,188" fill="rgba(0,200,160,0.08)" stroke="#00c8a0" stroke-width="1" opacity="0.6"/>
+          <polygon points="310,170 360,165 368,210 315,215" fill="rgba(0,132,255,0.08)" stroke="#0084ff" stroke-width="1" opacity="0.6"/>
+          <polygon points="160,200 200,195 205,230 165,235" fill="rgba(240,165,0,0.06)" stroke="#f0a500" stroke-width="0.8" opacity="0.5"/>
+
+          <!-- Survey points -->
+          <circle cx="260" cy="240" r="5" fill="#00c8a0" class="map-pulse"/>
+          <circle cx="120" cy="160" r="4" fill="#0084ff" class="map-pulse2"/>
+          <circle cx="400" cy="320" r="4" fill="#f0a500" class="map-pulse3"/>
+          <circle cx="340" cy="160" r="3.5" fill="#00c8a0" class="map-pulse"/>
+          <circle cx="180" cy="340" r="3.5" fill="#0084ff" class="map-pulse2"/>
+
+          <!-- Crosshair on main point -->
+          <line x1="246" y1="240" x2="254" y2="240" stroke="#00c8a0" stroke-width="1" opacity="0.8"/>
+          <line x1="260" y1="226" x2="260" y2="234" stroke="#00c8a0" stroke-width="1" opacity="0.8"/>
+
+          <!-- Data labels -->
+          <rect x="272" y="228" width="68" height="18" fill="rgba(0,200,160,0.12)" stroke="#00c8a0" stroke-width="0.5"/>
+          <text x="306" y="240" fill="#00c8a0" font-size="8" font-family="'Barlow Condensed', sans-serif" text-anchor="middle" letter-spacing="1">18.5200° N</text>
+
+          <rect x="130" y="148" width="58" height="16" fill="rgba(0,132,255,0.12)" stroke="#0084ff" stroke-width="0.5"/>
+          <text x="159" y="159" fill="#0084ff" font-size="7" font-family="'Barlow Condensed', sans-serif" text-anchor="middle" letter-spacing="1">PT-001</text>
+
+          <!-- Compass rose -->
+          <g transform="translate(448,52)">
+            <circle cx="0" cy="0" r="22" fill="rgba(10,14,19,0.7)" stroke="#1e3048" stroke-width="1"/>
+            <polygon points="0,-16 4,-4 0,0 -4,-4" fill="#00c8a0"/>
+            <polygon points="0,16 4,4 0,0 -4,4" fill="#1e3048"/>
+            <polygon points="-16,0 -4,-4 0,0 -4,4" fill="#6b8aa8"/>
+            <polygon points="16,0 4,-4 0,0 4,4" fill="#6b8aa8"/>
+            <text x="0" y="-18" fill="#00c8a0" font-size="7" font-family="'Barlow Condensed'" text-anchor="middle">N</text>
+          </g>
+
+          <!-- Scale bar -->
+          <g transform="translate(60,420)">
+            <line x1="0" y1="0" x2="80" y2="0" stroke="#6b8aa8" stroke-width="1.5"/>
+            <line x1="0" y1="-4" x2="0" y2="4" stroke="#6b8aa8" stroke-width="1.5"/>
+            <line x1="80" y1="-4" x2="80" y2="4" stroke="#6b8aa8" stroke-width="1.5"/>
+            <line x1="40" y1="-3" x2="40" y2="3" stroke="#6b8aa8" stroke-width="1"/>
+            <text x="40" y="-8" fill="#6b8aa8" font-size="8" font-family="'Barlow Condensed'" text-anchor="middle" letter-spacing="1">500 M</text>
+          </g>
+
+          <!-- Frame border -->
+          <rect x="2" y="2" width="516" height="476" stroke="#1e3048" stroke-width="1.5" fill="none"/>
+          <rect x="8" y="8" width="504" height="464" stroke="#00c8a0" stroke-width="0.3" fill="none" opacity="0.4"/>
+
+          <!-- Corner marks -->
+          <path d="M2,2 L20,2 M2,2 L2,20" stroke="#00c8a0" stroke-width="1.5" fill="none"/>
+          <path d="M518,2 L500,2 M518,2 L518,20" stroke="#00c8a0" stroke-width="1.5" fill="none"/>
+          <path d="M2,478 L20,478 M2,478 L2,460" stroke="#00c8a0" stroke-width="1.5" fill="none"/>
+          <path d="M518,478 L500,478 M518,478 L518,460" stroke="#00c8a0" stroke-width="1.5" fill="none"/>
+        </svg>
+      </div>
+    </div>
+  </section>
+
+  <!-- TICKER -->
+  <div class="ticker">
+    <div class="ticker-inner">
+      <span class="ticker-item">Land Survey Digitization</span>
+      <span class="ticker-item ticker-sep">◆</span>
+      <span class="ticker-item">GIS Mapping</span>
+      <span class="ticker-item ticker-sep">◆</span>
+      <span class="ticker-item">Cadastral Mapping</span>
+      <span class="ticker-item ticker-sep">◆</span>
+      <span class="ticker-item">Road Infrastructure Mapping</span>
+      <span class="ticker-item ticker-sep">◆</span>
+      <span class="ticker-item">Railway Corridor Mapping</span>
+      <span class="ticker-item ticker-sep">◆</span>
+      <span class="ticker-item">Pipeline Mapping</span>
+      <span class="ticker-item ticker-sep">◆</span>
+      <span class="ticker-item">Utility Asset Mapping</span>
+      <span class="ticker-item ticker-sep">◆</span>
+      <span class="ticker-item">CAD Drafting</span>
+      <span class="ticker-item ticker-sep">◆</span>
+      <!-- repeat for seamless scroll -->
+      <span class="ticker-item">Land Survey Digitization</span>
+      <span class="ticker-item ticker-sep">◆</span>
+      <span class="ticker-item">GIS Mapping</span>
+      <span class="ticker-item ticker-sep">◆</span>
+      <span class="ticker-item">Cadastral Mapping</span>
+      <span class="ticker-item ticker-sep">◆</span>
+      <span class="ticker-item">Road Infrastructure Mapping</span>
+      <span class="ticker-item ticker-sep">◆</span>
+      <span class="ticker-item">Railway Corridor Mapping</span>
+      <span class="ticker-item ticker-sep">◆</span>
+      <span class="ticker-item">Pipeline Mapping</span>
+      <span class="ticker-item ticker-sep">◆</span>
+      <span class="ticker-item">Utility Asset Mapping</span>
+      <span class="ticker-item ticker-sep">◆</span>
+      <span class="ticker-item">CAD Drafting</span>
+      <span class="ticker-item ticker-sep">◆</span>
+    </div>
+  </div>
+
+  <section class="section">
+    <div class="section-header" style="display:flex; justify-content:space-between; align-items:flex-end; margin-bottom:48px;">
+      <div>
+        <div class="section-tag">What We Do</div>
+        <h2 class="section-title">Core <span>Services</span></h2>
+      </div>
+      <a class="btn-outline" onclick="showPage('services')">All Services →</a>
+    </div>
+
+    <div class="services-grid" style="grid-template-columns: repeat(4,1fr);">
+      <div class="service-card">
+        <span class="service-icon">🗺</span>
+        <div class="service-name">Land Survey<br>Digitization</div>
+        <p class="service-desc">Converting physical survey records into high-accuracy digital formats with georeferencing.</p>
+      </div>
+      <div class="service-card">
+        <span class="service-icon">🛰</span>
+        <div class="service-name">GIS Mapping &amp;<br>Database Creation</div>
+        <p class="service-desc">Spatial databases and layered GIS deliverables for informed decision-making.</p>
+      </div>
+      <div class="service-card">
+        <span class="service-icon">🏗</span>
+        <div class="service-name">Infrastructure<br>Corridor Mapping</div>
+        <p class="service-desc">Road, railway and pipeline corridor surveys with detailed spatial intelligence.</p>
+      </div>
+      <div class="service-card">
+        <span class="service-icon">📐</span>
+        <div class="service-name">CAD Drafting &amp;<br>Engineering Plans</div>
+        <p class="service-desc">Precise CAD drawings and engineering plan preparation to industry standards.</p>
+      </div>
+    </div>
+  </section>
+
+  <div class="section-divider"></div>
+
+  <section class="section">
+    <div class="cta-band">
+      <div>
+        <div class="cta-band-text">Ready to start your mapping project?</div>
+        <div class="cta-band-sub">Government agencies and private clients — we deliver on time, every time.</div>
+      </div>
+      <a class="btn-primary" onclick="showPage('contact')">Request a Quote</a>
+    </div>
+  </section>
+</div>
+
+
+<!-- ═══════════════════ ABOUT ═══════════════════ -->
+<div id="page-about" class="page">
+  <section class="section">
+    <div class="section-header">
+      <div class="section-tag">Who We Are</div>
+      <h2 class="section-title">About <span>GeoInfra</span></h2>
+    </div>
+
+    <div class="about-grid">
+      <div class="about-text">
+        <p>
+          <strong>GeoInfra Surveyors</strong> is a professional geospatial and engineering data solutions firm based in India. Founded with a commitment to precision, we bridge the gap between traditional land survey practices and modern digital geospatial technology.
+        </p>
+        <p>
+          We serve both <strong>government bodies</strong> and <strong>private-sector clients</strong> across India, delivering high-accuracy mapping, GIS database creation, cadastral surveys, and CAD drafting for infrastructure projects of all scales.
+        </p>
+        <p>
+          Our multidisciplinary team combines expertise in surveying, remote sensing, geographic information systems, and civil engineering drawing to provide end-to-end geospatial solutions — from raw data acquisition to final deliverables.
+        </p>
+        <p>
+          Whether you need digitization of legacy survey records, a complete GIS database for a smart city project, or corridor mapping for a new highway, <strong>GeoInfra Surveyors</strong> has the tools, talent, and experience to deliver.
+        </p>
+        <div style="margin-top:32px;">
+          <a class="btn-primary" onclick="showPage('contact')">Work With Us</a>
+        </div>
+      </div>
+
+      <div class="about-visual">
+        <div class="about-card">
+          <div class="about-card-header">// Our Core Strengths</div>
+          <div class="value-item">
+            <div class="value-icon">🎯</div>
+            <div>
+              <div class="value-label">Sub-centimetre Precision</div>
+              <div class="value-desc">All deliverables meet or exceed national survey accuracy standards with full QA/QC protocols.</div>
+            </div>
+          </div>
+          <div class="value-item">
+            <div class="value-icon">⚡</div>
+            <div>
+              <div class="value-label">Fast Turnaround</div>
+              <div class="value-desc">Optimized workflows ensure timely delivery even for large-scale corridor and cadastral projects.</div>
+            </div>
+          </div>
+          <div class="value-item">
+            <div class="value-icon">🏛</div>
+            <div>
+              <div class="value-label">Government-Grade Compliance</div>
+              <div class="value-desc">Experienced with NRSC, SOI, and state revenue department formats and submission standards.</div>
+            </div>
+          </div>
+          <div class="value-item">
+            <div class="value-icon">🔒</div>
+            <div>
+              <div class="value-label">Secure Data Handling</div>
+              <div class="value-desc">All spatial data managed with strict confidentiality and data-security best practices.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-header" style="margin-top:96px; margin-bottom:0;">
+      <div class="section-tag">Our Team</div>
+      <h2 class="section-title">The <span>Experts</span></h2>
+    </div>
+
+    <div class="team-grid">
+      <div class="team-card">
+        <div class="team-avatar">AK</div>
+        <div class="team-name">Ajay Kumar</div>
+        <div class="team-role">Founder &amp; Chief Surveyor</div>
+        <div class="team-bio">15+ years in land survey and geospatial engineering. Specialist in cadastral digitization and DGPS surveys for government projects.</div>
+      </div>
+      <div class="team-card">
+        <div class="team-avatar">PS</div>
+        <div class="team-name">Priya Sharma</div>
+        <div class="team-role">GIS Lead</div>
+        <div class="team-bio">Expert in ArcGIS, QGIS, and spatial database architecture. Delivered GIS solutions for municipal corporations and NHAI corridor projects.</div>
+      </div>
+      <div class="team-card">
+        <div class="team-avatar">RM</div>
+        <div class="team-name">Rohan Mehta</div>
+        <div class="team-role">CAD &amp; Drafting Head</div>
+        <div class="team-bio">AutoCAD and MicroStation specialist with extensive experience in infrastructure plan preparation and engineering drawing coordination.</div>
+      </div>
+    </div>
+  </section>
+</div>
+
+
+<!-- ═══════════════════ SERVICES ═══════════════════ -->
+<div id="page-services" class="page">
+  <section class="section">
+    <div class="section-header">
+      <div class="section-tag">What We Offer</div>
+      <h2 class="section-title">Our <span>Services</span></h2>
+    </div>
+
+    <div class="services-grid">
+      <div class="service-card">
+        <div class="service-num">01</div>
+        <span class="service-icon">🗺</span>
+        <div class="service-name">Land Survey Digitization</div>
+        <p class="service-desc">We convert physical survey records, field books, and paper maps into precise georeferenced digital formats. Includes scanning, vectorization, coordinate transformation, and QA/QC to survey-grade accuracy.</p>
+        <span class="service-badge">Core Service</span>
+      </div>
+      <div class="service-card">
+        <div class="service-num">02</div>
+        <span class="service-icon">🛰</span>
+        <div class="service-name">GIS Mapping &amp; Database Creation</div>
+        <p class="service-desc">End-to-end GIS solutions including spatial data collection, layer development, attribute database creation, topology building, and custom map production using ArcGIS and QGIS platforms.</p>
+        <span class="service-badge">High Demand</span>
+      </div>
+      <div class="service-card">
+        <div class="service-num">03</div>
+        <span class="service-icon">📋</span>
+        <div class="service-name">Cadastral Mapping</div>
+        <p class="service-desc">Revenue parcel mapping, khasra digitization, mutation records, and cadastral database preparation aligned with state revenue department formats and national standards.</p>
+        <span class="service-badge">Government</span>
+      </div>
+      <div class="service-card">
+        <div class="service-num">04</div>
+        <span class="service-icon">🛣</span>
+        <div class="service-name">Road Infrastructure Mapping</div>
+        <p class="service-desc">Detailed highway and road corridor surveys including ROW mapping, alignment profiling, cross-section extraction, and asset inventory for national highways and state road projects.</p>
+        <span class="service-badge">Infrastructure</span>
+      </div>
+      <div class="service-card">
+        <div class="service-num">05</div>
+        <span class="service-icon">🚂</span>
+        <div class="service-name">Railway Corridor Mapping</div>
+        <p class="service-desc">Precision corridor surveys for railway projects — track alignment, buffer zone mapping, land acquisition support, and feature extraction from satellite and drone imagery along railway routes.</p>
+        <span class="service-badge">Infrastructure</span>
+      </div>
+      <div class="service-card">
+        <div class="service-num">06</div>
+        <span class="service-icon">🔧</span>
+        <div class="service-name">Pipeline Mapping</div>
+        <p class="service-desc">Above-ground and underground pipeline corridor mapping for oil, gas, and water utilities. Includes route survey, feature inventory, clearance mapping, and GIS-ready deliverables.</p>
+        <span class="service-badge">Energy &amp; Utility</span>
+      </div>
+      <div class="service-card">
+        <div class="service-num">07</div>
+        <span class="service-icon">⚡</span>
+        <div class="service-name">Utility Asset Mapping</div>
+        <p class="service-desc">Comprehensive mapping of electricity, telecom, water, and sewer networks. GPS-tagged asset locations, attribute capture, and network topology creation for smart city and utility management systems.</p>
+        <span class="service-badge">Smart City</span>
+      </div>
+      <div class="service-card">
+        <div class="service-num">08</div>
+        <span class="service-icon">📐</span>
+        <div class="service-name">CAD Drafting</div>
+        <p class="service-desc">Professional drafting of survey plans, site layouts, cross-sections, contour maps, and engineering drawings in AutoCAD and MicroStation. Suitable for approvals, litigation, and construction documentation.</p>
+        <span class="service-badge">Engineering</span>
+      </div>
+    </div>
+
+    <div class="section-header" style="margin-top:80px; margin-bottom:24px;">
+      <div class="section-tag">Technology Stack</div>
+      <h2 class="section-title">Tools We <span>Use</span></h2>
+    </div>
+
+    <div class="tools-strip">
+      <div class="tool-chip">
+        <div class="tool-name">ArcGIS Pro</div>
+        <div class="tool-type">GIS Platform</div>
+      </div>
+      <div class="tool-chip">
+        <div class="tool-name">QGIS</div>
+        <div class="tool-type">Open-source GIS</div>
+      </div>
+      <div class="tool-chip">
+        <div class="tool-name">AutoCAD</div>
+        <div class="tool-type">CAD Drafting</div>
+      </div>
+      <div class="tool-chip">
+        <div class="tool-name">MicroStation</div>
+        <div class="tool-type">Engineering CAD</div>
+      </div>
+      <div class="tool-chip">
+        <div class="tool-name">Global Mapper</div>
+        <div class="tool-type">Survey Processing</div>
+      </div>
+      <div class="tool-chip">
+        <div class="tool-name">DGPS / Total Station</div>
+        <div class="tool-type">Field Equipment</div>
+      </div>
+    </div>
+
+    <div class="cta-band" style="margin-top:64px;">
+      <div>
+        <div class="cta-band-text">Need a customized geospatial solution?</div>
+        <div class="cta-band-sub">Tell us about your project and we'll prepare a tailored proposal.</div>
+      </div>
+      <a class="btn-primary" onclick="showPage('contact')">Get a Free Quote</a>
+    </div>
+  </section>
+</div>
+
+
+<!-- ═══════════════════ PROJECTS ═══════════════════ -->
+<div id="page-projects" class="page">
+  <section class="section">
+    <div class="section-header">
+      <div class="section-tag">Our Work</div>
+      <h2 class="section-title">Featured <span>Projects</span></h2>
+    </div>
+
+    <div class="projects-grid">
+      <!-- Project 1 -->
+      <div class="project-card">
+        <div class="project-visual" style="background: linear-gradient(135deg, #0a1628 0%, #0d2040 100%);">
+          <svg width="280" height="180" viewBox="0 0 280 180">
+            <defs>
+              <pattern id="p1" width="14" height="14" patternUnits="userSpaceOnUse">
+                <path d="M 14 0 L 0 0 0 14" fill="none" stroke="#1e3048" stroke-width="0.5"/>
+              </pattern>
+            </defs>
+            <rect width="280" height="180" fill="url(#p1)"/>
+            <polygon points="60,40 120,30 180,50 220,40 240,80 220,130 170,150 100,145 60,120 40,80" fill="rgba(0,132,255,0.08)" stroke="#0084ff" stroke-width="1"/>
+            <polygon points="80,55 115,48 160,62 195,55 210,85 195,120 155,135 95,130 75,108 60,80" fill="rgba(0,132,255,0.05)" stroke="#0084ff" stroke-width="0.5"/>
+            <polygon points="100,70 130,65 158,75 175,70 185,90 175,112 145,122 108,118 92,100 84,86" fill="rgba(0,200,160,0.06)" stroke="#00c8a0" stroke-width="1"/>
+            <!-- Parcel divisions -->
+            <line x1="150" y1="30" x2="150" y2="150" stroke="#0084ff" stroke-width="0.5" stroke-dasharray="3 3" opacity="0.4"/>
+            <line x1="60" y1="90" x2="240" y2="90" stroke="#0084ff" stroke-width="0.5" stroke-dasharray="3 3" opacity="0.4"/>
+            <circle cx="150" cy="90" r="4" fill="#00c8a0"/>
+            <circle cx="100" cy="60" r="3" fill="#0084ff"/>
+            <circle cx="200" cy="120" r="3" fill="#0084ff"/>
+          </svg>
+        </div>
+        <div class="project-body">
+          <span class="project-tag">Cadastral Mapping</span>
+          <div class="project-name">District Revenue Land Records Digitization</div>
+          <p class="project-desc">Digitization of 12,000+ cadastral parcels for a state revenue department, including khasra boundaries, mutation integration, and GIS database creation.</p>
+          <div class="project-meta">
+            <div class="project-meta-item">
+              <div class="meta-label">Client</div>
+              <div class="meta-value">State Revenue Dept.</div>
+            </div>
+            <div class="project-meta-item">
+              <div class="meta-label">Area</div>
+              <div class="meta-value">480 sq. km</div>
+            </div>
+            <div class="project-meta-item">
+              <div class="meta-label">Status</div>
+              <div class="meta-value" style="color:var(--accent)">Completed</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Project 2 -->
+      <div class="project-card">
+        <div class="project-visual" style="background: linear-gradient(135deg, #0d1a10 0%, #0a2010 100%);">
+          <svg width="280" height="180" viewBox="0 0 280 180">
+            <defs>
+              <pattern id="p2" width="14" height="14" patternUnits="userSpaceOnUse">
+                <path d="M 14 0 L 0 0 0 14" fill="none" stroke="#0d2a10" stroke-width="0.5"/>
+              </pattern>
+            </defs>
+            <rect width="280" height="180" fill="url(#p2)"/>
+            <!-- Road corridor -->
+            <path d="M 20 90 Q 70 85 140 90 Q 200 95 260 88" stroke="#f0a500" stroke-width="3" fill="none" opacity="0.8"/>
+            <path d="M 20 82 Q 70 77 140 82 Q 200 87 260 80" stroke="#f0a500" stroke-width="1" fill="none" opacity="0.3" stroke-dasharray="8 6"/>
+            <path d="M 20 98 Q 70 93 140 98 Q 200 103 260 96" stroke="#f0a500" stroke-width="1" fill="none" opacity="0.3" stroke-dasharray="8 6"/>
+            <!-- ROW zone -->
+            <path d="M 20 65 Q 70 60 140 65 Q 200 70 260 63" stroke="#00c8a0" stroke-width="0.8" fill="none" opacity="0.4" stroke-dasharray="4 4"/>
+            <path d="M 20 115 Q 70 110 140 115 Q 200 120 260 113" stroke="#00c8a0" stroke-width="0.8" fill="none" opacity="0.4" stroke-dasharray="4 4"/>
+            <!-- Chainage marks -->
+            <line x1="80" y1="75" x2="80" y2="105" stroke="#f0a500" stroke-width="0.8" opacity="0.5"/>
+            <line x1="140" y1="75" x2="140" y2="105" stroke="#f0a500" stroke-width="0.8" opacity="0.5"/>
+            <line x1="200" y1="75" x2="200" y2="105" stroke="#f0a500" stroke-width="0.8" opacity="0.5"/>
+            <rect x="68" y="64" width="26" height="12" fill="rgba(240,165,0,0.15)" stroke="#f0a500" stroke-width="0.5"/>
+            <text x="81" y="73" fill="#f0a500" font-size="7" font-family="'Barlow Condensed'" text-anchor="middle">0+500</text>
+            <rect x="128" y="64" width="26" height="12" fill="rgba(240,165,0,0.15)" stroke="#f0a500" stroke-width="0.5"/>
+            <text x="141" y="73" fill="#f0a500" font-size="7" font-family="'Barlow Condensed'" text-anchor="middle">1+000</text>
+          </svg>
+        </div>
+        <div class="project-body">
+          <span class="project-tag">Road Infrastructure</span>
+          <div class="project-name">NH Corridor GIS Mapping – 4-Lane Expansion</div>
+          <p class="project-desc">Complete GIS and CAD survey for a national highway 4-lane expansion project including ROW mapping, asset inventory, and cross-section preparation at 100m intervals.</p>
+          <div class="project-meta">
+            <div class="project-meta-item">
+              <div class="meta-label">Client</div>
+              <div class="meta-value">NHAI / PMC</div>
+            </div>
+            <div class="project-meta-item">
+              <div class="meta-label">Length</div>
+              <div class="meta-value">220 km</div>
+            </div>
+            <div class="project-meta-item">
+              <div class="meta-label">Status</div>
+              <div class="meta-value" style="color:var(--accent)">Completed</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Project 3 -->
+      <div class="project-card">
+        <div class="project-visual" style="background: linear-gradient(135deg, #0d0d1a 0%, #0a0a20 100%);">
+          <svg width="280" height="180" viewBox="0 0 280 180">
+            <defs>
+              <pattern id="p3" width="14" height="14" patternUnits="userSpaceOnUse">
+                <path d="M 14 0 L 0 0 0 14" fill="none" stroke="#0d0d28" stroke-width="0.5"/>
+              </pattern>
+            </defs>
+            <rect width="280" height="180" fill="url(#p3)"/>
+            <!-- City blocks -->
+            <rect x="40" y="40" width="50" height="36" fill="rgba(0,132,255,0.08)" stroke="#0084ff" stroke-width="0.8"/>
+            <rect x="100" y="40" width="40" height="36" fill="rgba(0,132,255,0.06)" stroke="#0084ff" stroke-width="0.8"/>
+            <rect x="150" y="40" width="60" height="36" fill="rgba(0,200,160,0.07)" stroke="#00c8a0" stroke-width="0.8"/>
+            <rect x="40" y="90" width="35" height="50" fill="rgba(0,200,160,0.06)" stroke="#00c8a0" stroke-width="0.8"/>
+            <rect x="85" y="90" width="55" height="50" fill="rgba(0,132,255,0.08)" stroke="#0084ff" stroke-width="0.8"/>
+            <rect x="150" y="90" width="36" height="50" fill="rgba(240,165,0,0.06)" stroke="#f0a500" stroke-width="0.8"/>
+            <rect x="196" y="90" width="44" height="50" fill="rgba(0,132,255,0.06)" stroke="#0084ff" stroke-width="0.8"/>
+            <!-- Utility lines -->
+            <path d="M 20 76 L 260 76" stroke="#00c8a0" stroke-width="1.5" opacity="0.6" stroke-dasharray="5 3"/>
+            <line x1="140" y1="20" x2="140" y2="160" stroke="#00c8a0" stroke-width="1" opacity="0.4" stroke-dasharray="5 3"/>
+            <!-- Asset dots -->
+            <circle cx="65" cy="76" r="4" fill="#00c8a0" opacity="0.8"/>
+            <circle cx="113" cy="76" r="4" fill="#00c8a0" opacity="0.8"/>
+            <circle cx="175" cy="76" r="4" fill="#00c8a0" opacity="0.8"/>
+            <circle cx="225" cy="76" r="4" fill="#f0a500" opacity="0.8"/>
+            <circle cx="140" cy="58" r="3" fill="#0084ff" opacity="0.8"/>
+            <circle cx="140" cy="115" r="3" fill="#0084ff" opacity="0.8"/>
+          </svg>
+        </div>
+        <div class="project-body">
+          <span class="project-tag">Utility Asset Mapping</span>
+          <div class="project-name">Municipal Utility Network GIS – Smart City Project</div>
+          <p class="project-desc">GPS-based field survey and GIS database creation for water supply, sewerage, and electrical networks for a smart city initiative, covering 85 urban wards.</p>
+          <div class="project-meta">
+            <div class="project-meta-item">
+              <div class="meta-label">Client</div>
+              <div class="meta-value">Municipal Corp.</div>
+            </div>
+            <div class="project-meta-item">
+              <div class="meta-label">Assets</div>
+              <div class="meta-value">45,000+</div>
+            </div>
+            <div class="project-meta-item">
+              <div class="meta-label">Status</div>
+              <div class="meta-value" style="color:var(--accent3)">Ongoing</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Project 4 -->
+      <div class="project-card">
+        <div class="project-visual" style="background: linear-gradient(135deg, #130d0a 0%, #1a1008 100%);">
+          <svg width="280" height="180" viewBox="0 0 280 180">
+            <defs>
+              <pattern id="p4" width="14" height="14" patternUnits="userSpaceOnUse">
+                <path d="M 14 0 L 0 0 0 14" fill="none" stroke="#200f05" stroke-width="0.5"/>
+              </pattern>
+            </defs>
+            <rect width="280" height="180" fill="url(#p4)"/>
+            <!-- Pipeline route -->
+            <path d="M 30 130 Q 80 120 130 90 Q 170 65 250 50" stroke="#0084ff" stroke-width="3" fill="none" opacity="0.8"/>
+            <path d="M 30 136 Q 80 126 130 96 Q 170 71 250 56" stroke="#0084ff" stroke-width="1.5" fill="none" opacity="0.4"/>
+            <path d="M 30 124 Q 80 114 130 84 Q 170 59 250 44" stroke="#0084ff" stroke-width="1.5" fill="none" opacity="0.4"/>
+            <!-- Buffer zone -->
+            <path d="M 30 150 Q 80 140 130 105 Q 170 80 250 65" stroke="#0084ff" stroke-width="0.7" fill="none" opacity="0.2" stroke-dasharray="4 4"/>
+            <path d="M 30 110 Q 80 100 130 72 Q 170 48 250 34" stroke="#0084ff" stroke-width="0.7" fill="none" opacity="0.2" stroke-dasharray="4 4"/>
+            <!-- Valve/junction markers -->
+            <rect x="121" y="81" width="18" height="18" fill="rgba(0,132,255,0.2)" stroke="#0084ff" stroke-width="1.2" transform="rotate(45 130 90)"/>
+            <rect x="161" y="56" width="16" height="16" fill="rgba(0,132,255,0.2)" stroke="#0084ff" stroke-width="1.2" transform="rotate(45 170 65)"/>
+            <!-- Terrain contours -->
+            <ellipse cx="80" cy="140" rx="30" ry="15" fill="none" stroke="#333" stroke-width="0.5" opacity="0.5"/>
+            <ellipse cx="80" cy="140" rx="20" ry="10" fill="none" stroke="#333" stroke-width="0.5" opacity="0.5"/>
+          </svg>
+        </div>
+        <div class="project-body">
+          <span class="project-tag">Pipeline Mapping</span>
+          <div class="project-name">Natural Gas Pipeline Corridor Survey</div>
+          <p class="project-desc">Survey and GIS mapping of a natural gas transmission pipeline including buffer zone analysis, land use intersection, valve inventory, and ROW documentation.</p>
+          <div class="project-meta">
+            <div class="project-meta-item">
+              <div class="meta-label">Client</div>
+              <div class="meta-value">Energy PSU</div>
+            </div>
+            <div class="project-meta-item">
+              <div class="meta-label">Length</div>
+              <div class="meta-value">380 km</div>
+            </div>
+            <div class="project-meta-item">
+              <div class="meta-label">Status</div>
+              <div class="meta-value" style="color:var(--accent)">Completed</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Project 5 -->
+      <div class="project-card">
+        <div class="project-visual" style="background: linear-gradient(135deg, #0d1618 0%, #081420 100%);">
+          <svg width="280" height="180" viewBox="0 0 280 180">
+            <defs>
+              <pattern id="p5" width="14" height="14" patternUnits="userSpaceOnUse">
+                <path d="M 14 0 L 0 0 0 14" fill="none" stroke="#0d1e24" stroke-width="0.5"/>
+              </pattern>
+            </defs>
+            <rect width="280" height="180" fill="url(#p5)"/>
+            <!-- Railway track -->
+            <path d="M 20 100 Q 70 95 140 90 Q 200 88 260 82" stroke="#aaa" stroke-width="2" fill="none" opacity="0.7"/>
+            <path d="M 20 106 Q 70 101 140 96 Q 200 94 260 88" stroke="#aaa" stroke-width="2" fill="none" opacity="0.7"/>
+            <!-- Sleepers -->
+            <line x1="50" y1="94" x2="50" y2="112" stroke="#666" stroke-width="3" opacity="0.6"/>
+            <line x1="80" y1="92" x2="80" y2="110" stroke="#666" stroke-width="3" opacity="0.6"/>
+            <line x1="110" y1="91" x2="110" y2="109" stroke="#666" stroke-width="3" opacity="0.6"/>
+            <line x1="140" y1="90" x2="140" y2="108" stroke="#666" stroke-width="3" opacity="0.6"/>
+            <line x1="170" y1="90" x2="170" y2="108" stroke="#666" stroke-width="3" opacity="0.6"/>
+            <line x1="200" y1="89" x2="200" y2="107" stroke="#666" stroke-width="3" opacity="0.6"/>
+            <line x1="230" y1="88" x2="230" y2="106" stroke="#666" stroke-width="3" opacity="0.6"/>
+            <!-- Buffer -->
+            <path d="M 20 75 Q 70 70 140 65 Q 200 63 260 57" stroke="#00c8a0" stroke-width="0.7" fill="none" opacity="0.4" stroke-dasharray="4 4"/>
+            <path d="M 20 131 Q 70 126 140 121 Q 200 119 260 113" stroke="#00c8a0" stroke-width="0.7" fill="none" opacity="0.4" stroke-dasharray="4 4"/>
+            <!-- Chainage markers -->
+            <text x="50" y="82" fill="#888" font-size="7" font-family="'Barlow Condensed'" text-anchor="middle">CH 0+250</text>
+            <text x="140" y="80" fill="#888" font-size="7" font-family="'Barlow Condensed'" text-anchor="middle">CH 0+700</text>
+            <text x="230" y="79" fill="#888" font-size="7" font-family="'Barlow Condensed'" text-anchor="middle">CH 1+150</text>
+          </svg>
+        </div>
+        <div class="project-body">
+          <span class="project-tag">Railway Corridor</span>
+          <div class="project-name">Railway Doubling Project – Corridor Mapping</div>
+          <p class="project-desc">Geospatial support for a railway doubling project including alignment survey, land acquisition mapping, utility identification, and corridor feature extraction from satellite imagery.</p>
+          <div class="project-meta">
+            <div class="project-meta-item">
+              <div class="meta-label">Client</div>
+              <div class="meta-value">Indian Railways</div>
+            </div>
+            <div class="project-meta-item">
+              <div class="meta-label">Length</div>
+              <div class="meta-value">145 km</div>
+            </div>
+            <div class="project-meta-item">
+              <div class="meta-label">Status</div>
+              <div class="meta-value" style="color:var(--accent)">Completed</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Project 6 -->
+      <div class="project-card">
+        <div class="project-visual" style="background: linear-gradient(135deg, #0d0a14 0%, #110d1c 100%);">
+          <svg width="280" height="180" viewBox="0 0 280 180">
+            <defs>
+              <pattern id="p6" width="14" height="14" patternUnits="userSpaceOnUse">
+                <path d="M 14 0 L 0 0 0 14" fill="none" stroke="#110d1e" stroke-width="0.5"/>
+              </pattern>
+            </defs>
+            <rect width="280" height="180" fill="url(#p6)"/>
+            <!-- Contour lines -->
+            <path d="M 20 150 Q 60 140 100 120 Q 140 100 180 80 Q 220 60 260 50" stroke="#00c8a0" stroke-width="0.7" fill="none" opacity="0.5" stroke-dasharray="3 3"/>
+            <path d="M 20 130 Q 60 122 100 105 Q 140 88 180 68 Q 220 50 260 40" stroke="#00c8a0" stroke-width="0.7" fill="none" opacity="0.45" stroke-dasharray="3 3"/>
+            <path d="M 20 110 Q 60 104 100 90 Q 140 76 185 58 Q 225 42 260 30" stroke="#00c8a0" stroke-width="0.7" fill="none" opacity="0.4" stroke-dasharray="3 3"/>
+            <!-- CAD border elements -->
+            <rect x="20" y="15" width="240" height="150" stroke="#1e3048" stroke-width="0.8" fill="none"/>
+            <line x1="20" y1="15" x2="20" y2="165" stroke="#1e3048" stroke-width="0.5"/>
+            <!-- Title block -->
+            <rect x="160" y="140" width="100" height="24" fill="rgba(30,48,72,0.4)" stroke="#1e3048" stroke-width="0.5"/>
+            <text x="210" y="152" fill="#6b8aa8" font-size="7" font-family="'Barlow Condensed'" text-anchor="middle" letter-spacing="1">SURVEY PLAN</text>
+            <text x="210" y="161" fill="#6b8aa8" font-size="6" font-family="'Barlow Condensed'" text-anchor="middle" letter-spacing="0.5">GeoInfra · 1:5000</text>
+            <!-- Coordinates grid -->
+            <text x="32" y="30" fill="#444" font-size="6" font-family="'Barlow Condensed'">E 378000</text>
+            <text x="32" y="90" fill="#444" font-size="6" font-family="'Barlow Condensed'">E 378500</text>
+            <text x="32" y="150" fill="#444" font-size="6" font-family="'Barlow Condensed'">E 379000</text>
+          </svg>
+        </div>
+        <div class="project-body">
+          <span class="project-tag">Land Survey Digitization</span>
+          <div class="project-name">Legacy Survey Record Digitization – Forest Department</div>
+          <p class="project-desc">Digitization of decades-old survey of India topo sheets and forest boundary maps, georeferenced to WGS84 and converted to GIS-ready shapefiles with full attribute databases.</p>
+          <div class="project-meta">
+            <div class="project-meta-item">
+              <div class="meta-label">Client</div>
+              <div class="meta-value">Forest Dept.</div>
+            </div>
+            <div class="project-meta-item">
+              <div class="meta-label">Sheets</div>
+              <div class="meta-value">1,200+</div>
+            </div>
+            <div class="project-meta-item">
+              <div class="meta-label">Status</div>
+              <div class="meta-value" style="color:var(--accent)">Completed</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="cta-band" style="margin-top:64px;">
+      <div>
+        <div class="cta-band-text">Have a project in mind?</div>
+        <div class="cta-band-sub">Share your requirements and get a customized proposal within 48 hours.</div>
+      </div>
+      <a class="btn-primary" onclick="showPage('contact')">Start a Project</a>
+    </div>
+  </section>
+</div>
+
+
+<!-- ═══════════════════ CONTACT ═══════════════════ -->
+<div id="page-contact" class="page">
+  <section class="section">
+    <div class="section-header">
+      <div class="section-tag">Get In Touch</div>
+      <h2 class="section-title">Contact <span>Us</span></h2>
+    </div>
+
+    <div class="contact-grid">
+      <div class="contact-info">
+        <h3>// Reach Us</h3>
+
+        <div class="contact-item">
+          <div class="contact-icon">📍</div>
+          <div>
+            <div class="contact-label">Office</div>
+            <div class="contact-value">GeoInfra Surveyors<br>India</div>
+          </div>
+        </div>
+
+        <div class="contact-item">
+          <div class="contact-icon">📞</div>
+          <div>
+            <div class="contact-label">Phone</div>
+            <div class="contact-value">+91 XXXXX XXXXX</div>
+          </div>
+        </div>
+
+        <div class="contact-item">
+          <div class="contact-icon">✉️</div>
+          <div>
+            <div class="contact-label">Email</div>
+            <div class="contact-value">info@geoinfrasurveyors.com</div>
+          </div>
+        </div>
+
+        <div class="contact-item">
+          <div class="contact-icon">🕐</div>
+          <div>
+            <div class="contact-label">Working Hours</div>
+            <div class="contact-value">Mon – Sat, 9:00 AM – 6:00 PM IST</div>
+          </div>
+        </div>
+
+        <div style="margin-top:40px; background:var(--surface); border:1px solid var(--border); padding:28px;">
+          <div class="about-card-header" style="margin-bottom:16px;">// Why Work With Us?</div>
+          <div style="font-size:13px; color:var(--text-dim); line-height:1.8; font-weight:300;">
+            ✔ Certified surveyors and GIS professionals<br>
+            ✔ Government and private sector experience<br>
+            ✔ Delivery to SOI / NRSC standards<br>
+            ✔ Competitive pricing with quality guarantee<br>
+            ✔ End-to-end project management<br>
+            ✔ Secure and confidential data handling
+          </div>
+        </div>
+      </div>
+
+      <div class="contact-form">
+        <div class="form-title">// Request a Quote</div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Full Name *</label>
+            <input class="form-input" type="text" placeholder="Your name" id="f-name"/>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Organization</label>
+            <input class="form-input" type="text" placeholder="Company / Dept." id="f-org"/>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Email Address *</label>
+            <input class="form-input" type="email" placeholder="your@email.com" id="f-email"/>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Phone Number</label>
+            <input class="form-input" type="tel" placeholder="+91 XXXXX XXXXX" id="f-phone"/>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Service Required *</label>
+          <select class="form-select" id="f-service">
+            <option value="" disabled selected>Select a service...</option>
+            <option>Land Survey Digitization</option>
+            <option>GIS Mapping &amp; Database Creation</option>
+            <option>Cadastral Mapping</option>
+            <option>Road Infrastructure Mapping</option>
+            <option>Railway Corridor Mapping</option>
+            <option>Pipeline Mapping</option>
+            <option>Utility Asset Mapping</option>
+            <option>CAD Drafting</option>
+            <option>Multiple Services / Full Project</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Project Area / Scale</label>
+          <input class="form-input" type="text" placeholder="e.g., 500 sq. km / 200 km corridor" id="f-scale"/>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Project Description *</label>
+          <textarea class="form-textarea" id="f-desc" placeholder="Describe your project requirements, deliverables needed, timeline, etc."></textarea>
+        </div>
+        <button class="form-submit" onclick="submitForm()">Send Enquiry →</button>
+        <div class="success-msg" id="success-msg">
+          ✔ Thank you! We'll get back to you within 24 hours.
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
+
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-grid">
+    <div>
+      <div class="footer-brand-name">GeoInfra Surveyors</div>
+      <div class="footer-brand-tag">Geospatial &amp; Engineering Data Solutions</div>
+      <p class="footer-desc">Professional land survey digitization, GIS mapping, and CAD drafting for government and private-sector clients across India.</p>
+    </div>
+    <div class="footer-col">
+      <h4>Navigation</h4>
+      <ul>
+        <li onclick="showPage('home')">Home</li>
+        <li onclick="showPage('about')">About Us</li>
+        <li onclick="showPage('services')">Services</li>
+        <li onclick="showPage('projects')">Projects</li>
+        <li onclick="showPage('contact')">Contact Us</li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <h4>Services</h4>
+      <ul>
+        <li onclick="showPage('services')">Land Survey Digitization</li>
+        <li onclick="showPage('services')">GIS Mapping</li>
+        <li onclick="showPage('services')">Cadastral Mapping</li>
+        <li onclick="showPage('services')">Corridor Mapping</li>
+        <li onclick="showPage('services')">CAD Drafting</li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <h4>Contact</h4>
+      <ul>
+        <li>India</li>
+        <li>+91 XXXXX XXXXX</li>
+        <li>info@geoinfrasurveyors.com</li>
+        <li>Mon–Sat, 9AM–6PM IST</li>
+      </ul>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <div class="footer-copy">© 2025 GeoInfra Surveyors. All rights reserved.</div>
+    <div class="footer-note">Land Survey Digitization · GIS Mapping · CAD Drafting · Infrastructure Mapping</div>
+  </div>
+</footer>
+
+<script>
+  function showPage(id) {
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.nav-links a').forEach(a => a.classList.remove('active'));
+    document.getElementById('page-' + id).classList.add('active');
+    const navEl = document.getElementById('nav-' + id);
+    if (navEl) navEl.classList.add('active');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  function submitForm() {
+    const name = document.getElementById('f-name').value.trim();
+    const email = document.getElementById('f-email').value.trim();
+    const service = document.getElementById('f-service').value;
+    const desc = document.getElementById('f-desc').value.trim();
+
+    if (!name || !email || !service || !desc) {
+      alert('Please fill in all required fields (Name, Email, Service, Description).');
+      return;
+    }
+
+    const msg = document.getElementById('success-msg');
+    msg.style.display = 'block';
+
+    // Reset
+    ['f-name','f-org','f-email','f-phone','f-scale','f-desc'].forEach(id => {
+      document.getElementById(id).value = '';
+    });
+    document.getElementById('f-service').selectedIndex = 0;
+
+    setTimeout(() => { msg.style.display = 'none'; }, 6000);
+  }
+</script>
+</body>
+</html>
